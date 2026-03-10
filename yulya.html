@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kelime Kartları — Turkish Flashcards</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kelime" />
+  <meta name="theme-color" content="#0f172a" />
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --dark:    #0a2540;
+      --dark2:   #1a5276;
+      --dark3:   #2d86c0;
+      --accent:  #e63946;
+      --accent-dk:#c1121f;
+      --cream:   #f5f0e8;
+      --white:   #ffffff;
+      --gray50:  #f9f6f0;
+      --gray100: #ede8df;
+      --gray200: #ddd7cc;
+      --gray400: #a09286;
+      --gray600: #6b5f54;
+      --gray700: #3d322a;
+      --gray900: #1a0f08;
+      --green:   #059669;
+      --green-lt:#d1fae5;
+      --amber:   #d97706;
+      --amber-lt:#fef3c7;
+      --blue:    #0284c7;
+      --indigo:  #0891b2;
+      --teal:    #0e7490;
+      --gold:    #e8a020;
+      --shadow:  0 4px 28px rgba(10,37,64,.13);
+      --radius:  16px;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--cream);
+      color: var(--gray900);
+      min-height: 100vh;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    header {
+      background: linear-gradient(145deg, #0a2540 0%, #1a5276 45%, #1a8b9a 100%);
+      color: #fff;
+      padding: 22px 24px 0;
+      box-shadow: 0 4px 24px rgba(10,37,64,.45);
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        repeating-linear-gradient(45deg,  rgba(255,255,255,.03) 0, rgba(255,255,255,.03) 1px, transparent 0, transparent 22px),
+        repeating-linear-gradient(135deg, rgba(255,255,255,.03) 0, rgba(255,255,255,.03) 1px, transparent 0, transparent 22px);
+      pointer-events: none;
+    }
+    header::after {
+      content: '⛵';
+      position: absolute;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-60%);
+      font-size: 3.8rem;
+      opacity: .12;
+      pointer-events: none;
+      user-select: none;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      max-width: 720px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .header-top h1 { font-size: 1.7rem; font-weight: 800; line-height: 1.2; letter-spacing: -.01em; text-shadow: 0 1px 8px rgba(0,0,0,.25); }
+    .header-top h1 span { display: block; font-size: .82rem; font-weight: 400; opacity: .6; letter-spacing: .01em; margin-top: 2px; }
+
+    nav {
+      display: flex;
+      gap: 4px;
+      max-width: 720px;
+      margin: 18px auto 0;
+      position: relative;
+    }
+    nav button {
+      background: transparent;
+      border: none;
+      color: rgba(255,255,255,.55);
+      font-size: .95rem;
+      font-weight: 600;
+      padding: 10px 22px;
+      border-radius: 10px 10px 0 0;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+    nav button:hover { background: rgba(255,255,255,.10); color: rgba(255,255,255,.88); }
+    nav button.active { background: var(--cream); color: var(--dark); font-weight: 700; }
+
+    /* ── Main ────────────────────────────────────────── */
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 28px 16px 60px;
+    }
+
+    .tab { display: none; }
+    .tab.active { display: block; }
+
+    /* ── Panel ───────────────────────────────────────── */
+    .panel {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(10,37,64,.07);
+    }
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ── Form ────────────────────────────────────────── */
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: .82rem; font-weight: 600; color: var(--gray600); letter-spacing: .03em; }
+    .field input, .field textarea, .field select {
+      border: 1.5px solid var(--gray200);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: .95rem;
+      font-family: inherit;
+      color: var(--gray900);
+      transition: border-color .15s;
+      background: var(--gray50);
+    }
+    .field input:focus, .field textarea:focus, .field select:focus {
+      outline: none;
+      border-color: var(--indigo);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(8,145,178,.10);
+    }
+    .field select { cursor: pointer; }
+    .field.full { grid-column: 1 / -1; }
+    .field textarea { resize: vertical; min-height: 60px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border: none;
+      border-radius: 10px;
+      font-size: .93rem;
+      font-weight: 600;
+      font-family: inherit;
+      padding: 11px 22px;
+      cursor: pointer;
+      transition: filter .15s, transform .1s;
+    }
+    .btn:hover { filter: brightness(.9); }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: linear-gradient(135deg, var(--dark2) 0%, var(--dark) 100%); color: #fff; box-shadow: 0 2px 8px rgba(10,37,64,.25); }
+    .btn-ghost   { background: var(--gray100); color: var(--gray700); }
+    .btn-green   { background: linear-gradient(135deg, #059669 0%, #047857 100%); color: #fff; box-shadow: 0 2px 8px rgba(5,150,105,.25); }
+    .btn-amber   { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #fff; box-shadow: 0 2px 8px rgba(217,119,6,.25); }
+    .btn-indigo  { background: linear-gradient(135deg, var(--indigo) 0%, var(--teal) 100%); color: #fff; box-shadow: 0 2px 8px rgba(8,145,178,.25); }
+    .btn-sm { padding: 6px 14px; font-size: .82rem; border-radius: 8px; }
+    .btn-icon { padding: 8px; border-radius: 8px; background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--gray400); transition: color .15s, background .15s; }
+    .btn-icon:hover { color: var(--accent); background: var(--gray100); }
+
+    .form-actions { display: flex; gap: 10px; justify-content: flex-end; align-items: center; margin-top: 16px; }
+    .msg { font-size: .85rem; padding: 8px 14px; border-radius: 8px; display: none; }
+    .msg.show { display: block; }
+    .msg.success { background: var(--green-lt); color: var(--green); }
+    .msg.error   { background: #fee2e2; color: var(--accent-dk); }
+
+    /* ── Word List ───────────────────────────────────── */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--gray50);
+      border: 1.5px solid var(--gray200);
+      border-radius: 10px;
+      padding: 0 14px;
+      margin-bottom: 16px;
+    }
+    .search-bar input {
+      border: none;
+      background: transparent;
+      padding: 10px 0;
+      font-size: .95rem;
+      width: 100%;
+      font-family: inherit;
+    }
+    .search-bar input:focus { outline: none; }
+    .search-bar span { color: var(--gray400); }
+    .word-count { font-size: .82rem; color: var(--gray400); margin-bottom: 14px; }
+
+    .word-list { display: flex; flex-direction: column; gap: 8px; }
+    .word-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--gray50);
+      border: 1.5px solid var(--gray200);
+      border-radius: 12px;
+      padding: 14px 16px;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .word-item:hover { border-color: var(--indigo); box-shadow: 0 2px 10px rgba(8,145,178,.10); }
+    .word-item-main { flex: 1; min-width: 0; }
+    .word-tr { font-size: 1rem; font-weight: 700; color: var(--gray900); display: flex; align-items: center; gap: 8px; }
+    .word-en { font-size: .88rem; color: var(--gray600); margin-top: 2px; }
+    .word-notes { font-size: .8rem; color: var(--gray400); font-style: italic; margin-top: 3px; }
+    .word-stats { display: flex; gap: 8px; flex-shrink: 0; }
+    .stat-pill {
+      font-size: .75rem;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+    .stat-correct   { background: var(--green-lt); color: var(--green); }
+    .stat-incorrect { background: #fee2e2; color: var(--accent-dk); }
+    .badge-new {
+      font-size: .65rem;
+      font-weight: 800;
+      letter-spacing: .06em;
+      padding: 2px 7px;
+      border-radius: 20px;
+      background: #fef3c7;
+      color: #92400e;
+      vertical-align: middle;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--gray400);
+    }
+    .empty-state .emoji { font-size: 3rem; margin-bottom: 12px; }
+    .empty-state p { font-size: .95rem; }
+
+
+    /* ── Quiz mode toggle ────────────────────────────── */
+    .quiz-mode-toggle {
+      display: flex;
+      background: var(--gray100);
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 20px;
+      gap: 4px;
+    }
+    .quiz-mode-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      border-radius: 9px;
+      padding: 10px 16px;
+      font-size: .9rem;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--gray600);
+      cursor: pointer;
+      transition: background .18s, color .18s, box-shadow .18s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+    .quiz-mode-btn:hover { color: var(--gray900); }
+    .quiz-mode-btn.active {
+      background: linear-gradient(135deg, var(--dark2) 0%, var(--teal) 100%);
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(10,37,64,.22);
+    }
+    .quiz-mode-btn .badge-count {
+      background: rgba(255,255,255,.22);
+      color: inherit;
+      font-size: .72rem;
+      padding: 1px 7px;
+      border-radius: 99px;
+      font-weight: 700;
+    }
+    .quiz-mode-btn:not(.active) .badge-count {
+      background: var(--gray200);
+      color: var(--gray600);
+    }
+
+    /* ── Quiz settings ───────────────────────────────── */
+    .quiz-settings {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .quiz-setting-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .quiz-setting-row label {
+      font-size: .82rem;
+      font-weight: 600;
+      color: var(--gray600);
+      width: 100px;
+      flex-shrink: 0;
+    }
+    .quiz-settings select {
+      flex: 1;
+      border: 1.5px solid var(--gray200);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: .88rem;
+      font-family: inherit;
+      background: var(--white);
+      color: var(--gray900);
+      cursor: pointer;
+    }
+    .quiz-settings select:focus { outline: none; border-color: var(--dark2); }
+
+    /* ── Session bar ─────────────────────────────────── */
+    .session-bar {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .session-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--gray600);
+    }
+    .session-stat .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-dark   { background: var(--indigo); }
+    .dot-green  { background: var(--green); }
+    .dot-amber  { background: var(--amber); }
+    .dot-indigo { background: var(--teal); }
+
+    /* ── Flip card ───────────────────────────────────── */
+    .card-scene {
+      perspective: 1000px;
+      height: 280px;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+    .card-flip {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform .55s cubic-bezier(.4,0,.2,1);
+    }
+    .card-flip.flipped { transform: rotateY(180deg); }
+    .card-face {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      text-align: center;
+    }
+    .card-front {
+      background: linear-gradient(160deg, #ffffff 60%, #e8f6fa 100%);
+      border: 2px solid rgba(8,145,178,.18);
+    }
+    .card-back  {
+      background: linear-gradient(145deg, #0a2540 0%, #1a5276 50%, #0e7490 100%);
+      transform: rotateY(180deg);
+      color: #fff;
+    }
+    .card-label {
+      font-size: .78rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      opacity: .45;
+      margin-bottom: 12px;
+    }
+    .card-word {
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 10px;
+    }
+    .card-hint {
+      font-size: .88rem;
+      opacity: .55;
+      font-style: italic;
+    }
+    .card-tap {
+      font-size: .8rem;
+      color: var(--gray400);
+      margin-top: 16px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .quiz-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .quiz-actions .btn { min-width: 140px; justify-content: center; font-size: 1rem; padding: 14px 28px; }
+
+    /* ── Quiz done screen ────────────────────────────── */
+    .quiz-done {
+      text-align: center;
+      padding: 32px 20px;
+    }
+    .quiz-done .big { font-size: 3.5rem; margin-bottom: 12px; }
+    .quiz-done h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 8px; }
+    .quiz-done p  { color: var(--gray600); margin-bottom: 20px; }
+    .score-row { display: flex; justify-content: center; gap: 24px; margin-bottom: 24px; }
+    .score-box { text-align: center; }
+    .score-num { font-size: 2rem; font-weight: 800; line-height: 1; }
+    .score-lbl { font-size: .8rem; color: var(--gray400); margin-top: 4px; font-weight: 600; }
+    .score-green  { color: var(--green); }
+    .score-amber  { color: var(--amber); }
+    .score-indigo { color: var(--teal); }
+
+    .progress-bar-wrap {
+      background: var(--gray200);
+      border-radius: 99px;
+      height: 6px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--dark2) 0%, var(--indigo) 100%);
+      border-radius: 99px;
+      transition: width .3s;
+    }
+    .card-counter {
+      text-align: center;
+      font-size: .85rem;
+      color: var(--gray400);
+      font-weight: 600;
+      margin-bottom: 10px;
+    }
+
+    .quiz-no-words {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--gray400);
+    }
+    .quiz-no-words .emoji { font-size: 3rem; margin-bottom: 12px; }
+
+    /* ── Category select filter (words tab) ─────────────── */
+    .cat-select-wrap {
+      margin-bottom: 16px;
+    }
+    .cat-select-wrap select {
+      width: 100%;
+      border: 1.5px solid var(--gray200);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: .95rem;
+      font-family: inherit;
+      background: var(--gray50);
+      color: var(--gray900);
+      cursor: pointer;
+      appearance: auto;
+    }
+    .cat-select-wrap select:focus {
+      outline: none;
+      border-color: var(--dark2);
+      background: var(--white);
+    }
+
+    /* ── Quiz deck word list ─────────────────────────── */
+    #quiz-deck-list {
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    /* learn-new empty */
+    .learn-done-banner {
+      text-align: center;
+      padding: 36px 20px;
+      background: linear-gradient(135deg, #e0f7fa 0%, #d1fae5 100%);
+      border: 1.5px solid rgba(8,145,178,.15);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+    }
+    .learn-done-banner .big { font-size: 2.8rem; margin-bottom: 10px; }
+    .learn-done-banner h2 { font-size: 1.25rem; font-weight: 800; color: var(--teal); margin-bottom: 6px; }
+    .learn-done-banner p { color: #065f46; font-size: .9rem; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <h1>Мои Турецкие Карточки<span>⚓ Турецкий язык · цель 1500 слов</span></h1>
+  </div>
+  <nav>
+    <button class="active" onclick="switchTab('quiz')">🎯 Учить</button>
+    <button onclick="switchTab('words')">➕ Добавить</button>
+  </nav>
+</header>
+
+<main>
+  <!-- ══ MY WORDS TAB ══════════════════════════════════ -->
+  <div id="tab-words" class="tab">
+
+    <div class="panel">
+      <div class="panel-title">➕Новое слово
+      </div>
+      <form id="add-form" onsubmit="addWord(event)">
+        <div class="form-row">
+          <div class="field">
+            <label>СЛОВО</label>
+            <input id="inp-tr" type="text" placeholder="e.g. merhaba" autocomplete="off" required />
+          </div>
+          <div class="field">
+            <label>ПЕРЕВОД</label>
+            <input id="inp-en" type="text" placeholder="e.g. привет" autocomplete="off" required />
+          </div>
+          <div class="field">
+            <label>КАТЕГОРИЯ</label>
+            <select id="inp-cat">
+              <option value="other">📦 Разное</option>
+              <option value="greeting">🤝 Приветствия</option>
+              <option value="family">👨‍👩‍👧 Семья</option>
+              <option value="profession">💼 Профессии</option>
+              <option value="body">🫀 Части тела</option>
+              <option value="food">🍽️ Еда и напитки</option>
+              <option value="produce">🥦 Овощи и фрукты</option>
+              <option value="animal">🐾 Животные</option>
+              <option value="home">🏠 Дом</option>
+              <option value="clothing">👕 Одежда</option>
+              <option value="color">🎨 Цвета</option>
+              <option value="number">🔢 Числа</option>
+              <option value="time">⏰ Время</option>
+              <option value="transport">🚗 Транспорт</option>
+              <option value="city">🏙️ Город и места</option>
+              <option value="nature">🌿 Природа</option>
+              <option value="pronoun">👤 Местоимения</option>
+              <option value="question">❓ Вопросы</option>
+              <option value="verb">⚡ Глаголы</option>
+              <option value="adjective">📝 Прилагательные</option>
+              <option value="preposition">🔗 Предлоги и союзы</option>
+              <option value="phrase">💬 Фразы</option>
+            </select>
+          </div>
+          <div class="field full">
+            <label>ЗАМЕТКА (примеры, контекст)</label>
+            <textarea id="inp-notes" placeholder="e.g. informal greeting used any time of day"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <div id="add-msg" class="msg"></div>
+          <button type="submit" class="btn btn-primary">Добавить слово</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        <span>📚 Все слова</span>
+      </div>
+      <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" id="search-inp" placeholder="Search words…" oninput="renderWordList()" />
+      </div>
+      <div class="cat-select-wrap">
+        <select id="cat-filter" onchange="setCatFilter(this.value)">
+          <option value="">Все категории</option>
+        </select>
+      </div>
+      <div id="word-count" class="word-count"></div>
+      <div id="word-list" class="word-list"></div>
+    </div>
+
+  </div>
+
+  <!-- ══ QUIZ TAB ══════════════════════════════════════ -->
+  <div id="tab-quiz" class="tab active">
+
+    <div id="quiz-no-words" class="panel quiz-no-words" style="display:none">
+      <div class="emoji">📝</div>
+      <p>Сначала добавьте слова, затем возвращайтесь!</p>
+    </div>
+
+    <div id="quiz-area" style="display:none">
+      <div class="panel">
+
+        <!-- Mode toggle -->
+        <div class="quiz-mode-toggle">
+          <button class="quiz-mode-btn active" id="mode-btn-learn" onclick="setQuizMode('learn')">
+            🌱 Новые <span id="badge-new-count" class="badge-count">0</span>
+          </button>
+          <button class="quiz-mode-btn" id="mode-btn-hard" onclick="setQuizMode('hard')">
+            🔥 Сложные <span id="badge-hard-count" class="badge-count">0</span>
+          </button>
+          <button class="quiz-mode-btn" id="mode-btn-repeat" onclick="setQuizMode('repeat')">
+            🔁 Все <span id="badge-all-count" class="badge-count">0</span>
+          </button>
+        </div>
+
+        <!-- Settings column -->
+        <div class="quiz-settings">
+          <div class="quiz-setting-row">
+            <label>Направление</label>
+            <select id="quiz-dir" onchange="startQuiz()">
+              <option value="tr-en">Турецкий → Русский</option>
+              <option value="en-tr">Русский → Турецкий</option>
+              <option value="random">Рандом</option>
+            </select>
+          </div>
+          <div class="quiz-setting-row">
+            <label>Группа</label>
+            <select id="quiz-group" onchange="startQuiz()">
+              <option value="">Все группы</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Session stats -->
+        <div class="session-bar">
+          <div class="session-stat"><div class="dot dot-dark"></div><span id="stat-total">0 слов</span></div>
+          <div class="session-stat"><div class="dot dot-green"></div><span id="stat-correct">0 верно</span></div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-bar-wrap">
+          <div id="progress-fill" class="progress-bar-fill" style="width:0%"></div>
+        </div>
+        <div id="card-counter" class="card-counter"></div>
+
+        <!-- Card -->
+        <div id="quiz-card-wrap"></div>
+
+        <!-- Action buttons (injected per mode) -->
+        <div id="quiz-actions" class="quiz-actions" style="display:none"></div>
+
+        <!-- Done screen -->
+        <div id="quiz-done" class="quiz-done" style="display:none">
+          <div class="big">🎉</div>
+          <h2 id="done-title">Раунд завершён!</h2>
+          <p id="done-sub">Вот ваши результаты:</p>
+          <div class="score-row">
+            <div class="score-box">
+              <div id="done-correct" class="score-num score-green">0</div>
+              <div class="score-lbl" id="done-correct-lbl">ВЕРНО</div>
+            </div>
+            <div class="score-box" id="done-promoted-box" style="display:none">
+              <div id="done-promoted" class="score-num score-indigo">0</div>
+              <div class="score-lbl">ВЫУЧЕНО</div>
+            </div>
+            <div class="score-box">
+              <div id="done-total" class="score-num">0</div>
+              <div class="score-lbl">ВСЕГО</div>
+            </div>
+            <div class="score-box">
+              <div id="done-pct" class="score-num score-amber">0%</div>
+              <div class="score-lbl">РЕЗУЛЬТАТ</div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="startQuiz()">Ещё раз</button>
+        </div>
+
+        <!-- Words in current tab -->
+        <div id="quiz-deck-list"></div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ── Edit modal ──────────────────────────────────────── -->
+<div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:999;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,.25);">
+    <div style="font-size:1.1rem;font-weight:700;margin-bottom:16px;color:var(--gray900)">✏️ Редактировать слово</div>
+    <div class="form-row">
+      <div class="field">
+        <label>СЛОВО</label>
+        <input id="edit-tr" type="text" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label>ПЕРЕВОД</label>
+        <input id="edit-en" type="text" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label>КАТЕГОРИЯ</label>
+        <select id="edit-cat">
+          <option value="other">📦 Разное</option>
+          <option value="greeting">🤝 Приветствия</option>
+          <option value="family">👨‍👩‍👧 Семья</option>
+          <option value="profession">💼 Профессии</option>
+          <option value="body">🫀 Части тела</option>
+          <option value="food">🍽️ Еда и напитки</option>
+          <option value="produce">🥦 Овощи и фрукты</option>
+          <option value="animal">🐾 Животные</option>
+          <option value="home">🏠 Дом</option>
+          <option value="clothing">👕 Одежда</option>
+          <option value="color">🎨 Цвета</option>
+          <option value="number">🔢 Числа</option>
+          <option value="time">⏰ Время</option>
+          <option value="transport">🚗 Транспорт</option>
+          <option value="city">🏙️ Город и места</option>
+          <option value="nature">🌿 Природа</option>
+          <option value="pronoun">👤 Местоимения</option>
+          <option value="question">❓ Вопросы</option>
+          <option value="verb">⚡ Глаголы</option>
+          <option value="adjective">📝 Прилагательные</option>
+          <option value="preposition">🔗 Предлоги и союзы</option>
+          <option value="phrase">💬 Фразы</option>
+        </select>
+      </div>
+      <div class="field full">
+        <label>ЗАМЕТКА</label>
+        <textarea id="edit-notes" style="min-height:56px"></textarea>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-ghost" onclick="closeEditModal()">Отмена</button>
+      <button class="btn btn-primary" onclick="saveEditedWord()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Telegram Mini App init ─────────────────────────────
+window.Telegram?.WebApp?.ready();
+window.Telegram?.WebApp?.expand();
+
+// ── Categories ─────────────────────────────────────────
+const CATEGORIES = {
+  greeting:    '🤝 Приветствия',
+  family:      '👨‍👩‍👧 Семья',
+  profession:  '💼 Профессии',
+  body:        '🫀 Части тела',
+  food:        '🍽️ Еда и напитки',
+  produce:     '🥦 Овощи и фрукты',
+  animal:      '🐾 Животные',
+  home:        '🏠 Дом',
+  clothing:    '👕 Одежда',
+  color:       '🎨 Цвета',
+  number:      '🔢 Числа',
+  time:        '⏰ Время',
+  transport:   '🚗 Транспорт',
+  city:        '🏙️ Город и места',
+  nature:      '🌿 Природа',
+  pronoun:     '👤 Местоимения',
+  question:    '❓ Вопросы',
+  verb:        '⚡ Глаголы',
+  adjective:   '📝 Прилагательные',
+  preposition: '🔗 Предлоги и союзы',
+  phrase:      '💬 Фразы',
+  other:       '📦 Разное',
+};
+
+const WORD_CATEGORIES = {
+  // ── Seed 1 ──────────────────────────────────────────
+  'taraf':'other','önemli':'adjective','iyi':'adjective','çocuk':'family',
+  'hastane':'city','yapmak':'verb','kule':'city','tarih':'other',
+  'mektup':'other','zaman':'time','karmaşık':'adjective','pil':'other',
+  'giriş':'other','zencefil':'food','aktarma':'transport','maydanoz':'food',
+  'dolu':'adjective','küçük':'adjective','sağlam':'adjective','karabiber':'food',
+  'oda':'home','mühendis':'profession','araba':'transport','çalışmak':'verb',
+  'gazeteci':'profession','evet':'other','meydan':'city','kapalı':'adjective',
+  'kafa':'body','film':'other','çalışma':'other','kedi':'animal',
+  'insan':'other','şarkıcı':'profession','değil':'other','aslan':'animal',
+  'erkek':'other','kaç':'question','ne':'question','plaka':'transport',
+  'burun':'body','portre':'other','yeni':'adjective','vermek':'verb',
+  'yeter':'other','biraz para':'other','bilmek':'verb','olmak':'verb',
+  'altında':'preposition','tren':'transport','kızım':'family','ucuz':'adjective',
+  'yanında':'preposition','sonuç':'other','çamaşır':'clothing','çünkü':'preposition',
+  'biraz':'other','boş':'adjective','gerçek':'adjective','devlet':'other',
+  'park edemezsiniz':'phrase','gitmek':'verb','aynı':'other','yıl':'time',
+  'şarkı':'other','her':'other','maymun':'animal','iyi günler':'greeting',
+  'köpek':'animal','hoş geldiniz':'greeting','dışarıda':'preposition',
+  'dizi':'other','bisiklet':'transport','saat':'time','dakika':'time',
+  'çizgi film':'other','gelmek':'verb','üstünde':'preposition','bilgi':'other',
+  'arkadaş':'other','büyük':'adjective','açık':'adjective','göz':'body',
+  'uzak':'adjective','dünya':'other','ülke':'other','bırakmak':'verb',
+  'uçak':'transport','başlamak':'verb','önce':'preposition','kolay':'adjective',
+  'dikkat':'other','tehlike':'other','dudak':'body','yol':'transport',
+  'yorgun':'adjective','bilet':'transport','ağaç':'nature','tekne':'transport',
+  'bakmak':'verb','tuz':'food','iş adamı':'profession','sanat':'other',
+  'rehber':'profession','resim':'other','iskele':'transport','şehir':'city',
+  'istemek':'verb','kilise':'city','indirim':'other','okul':'city',
+  'iyi akşamlar':'greeting','tiyatro':'city','yer':'other','yetişkin':'other',
+  'ders':'other','yürüyerek':'transport','adres':'other','anıt':'city',
+  'toptan':'other','çok':'other','veya':'preposition','bahçe':'nature',
+  'sabahlık':'clothing','söz':'other','için':'preposition','içinde':'preposition',
+  'deniz':'nature','avukat':'profession','var':'other','yarışma':'other',
+  // ── Seed 2 ──────────────────────────────────────────
+  'afiyet olsun':'greeting','şerefe':'greeting','özür dilerim':'greeting',
+  'nasılsınız':'greeting','pazartesi':'time','salı':'time','çarşamba':'time',
+  'perşembe':'time','cuma':'time','cumartesi':'time','pazar':'time',
+  'güle güle':'greeting','kış':'time','ilkbahar':'time','yaz':'time',
+  'sonbahar':'time','cam':'home','elbise':'clothing','fare':'animal',
+  'gül':'nature','siyah':'color','mutlu':'adjective','sabah':'time',
+  'poşet':'other','soru':'question','top':'other','ütü':'home',
+  'valiz':'other','yastık':'home','zengin':'adjective','su':'food',
+  'o':'pronoun','öğretmen':'profession','kim':'question','dolap':'home',
+  'çanta':'clothing','defter':'other','doktor':'profession','meyve':'produce',
+  'sebze':'produce','aşk':'other','sevmek':'verb','gece':'time',
+  'gün':'time','güneş':'nature','ay':'nature','ayakkabı':'clothing',
+  'uzun':'adjective','kısa':'adjective','parmak':'body','tavan':'home',
+  'un':'food','fırın':'home','ocak':'home','duraklama':'transport',
+  'ara':'other','tesisatçı':'profession','elektrik':'other','gömlek':'clothing',
+  'pantolon':'clothing','yat':'transport','jeneratör':'other','motor':'transport',
+  'laptop':'other','şarj':'other','onarım':'other','yüksek':'adjective',
+  'sessiz':'adjective','sivrisinek':'animal','arı':'animal','taş':'nature',
+  'TV':'other','ekran':'other','iplik':'other','diş':'body',
+  'dişçi':'profession','saç':'body','kaşık':'home','çatal':'home',
+  'lezzetli':'adjective','maaş':'other','ödeme':'other','reçete':'other',
+  'çiçek':'nature','sucuk':'food','sandalye':'home','merdiven':'home',
+  'yukarı':'preposition','aşağı':'preposition','makas':'other','kulak':'body',
+  'ayak':'body','perde':'home','kanepe':'home','daire':'home',
+  'ev':'home','kat':'home','sokak':'city','limon':'produce',
+  'yumurta':'food','peynir':'food','süt':'food','dana eti':'food',
+  'türk':'adjective','bira':'food','maden suyu':'food','meyve suyu':'food',
+  'sos':'food','zeytinyağı':'food','tereyağı':'food','brokoli':'produce',
+  'som':'food','krema':'food','yemiş':'food','çöp':'home',
+  'çöp torbası':'home','pencere':'home','buzdolabı':'home','hayvan':'animal',
+  'kuş':'animal','inek':'animal','domuz':'animal','tavuk':'animal',
+  'tavşan':'animal','fil':'animal','at':'animal','koyun':'animal',
+  'yavru köpek':'animal','zürafa':'animal','eşek':'animal',
+  'yiyecek / içecek':'food','yemek':'food','kahve':'food','çay':'food',
+  'ekmek':'food','makarna':'food','pirinç':'food','salata':'food',
+  'havuç':'produce','soğan':'produce','sarımsak':'produce','patates':'produce',
+  'pancar':'produce','turp':'produce','lahana':'produce','elma':'produce',
+  'armut':'produce','nar':'produce','mantar':'produce','salatalık':'produce',
+  'domates':'produce','dolmalık biber':'produce','muz':'produce',
+  'avokado':'produce','mango':'produce','karpuz':'produce','patlıcan':'produce',
+  'kabak':'produce','bezelye':'produce','sıfır':'number','bin':'number',
+  'milyon':'number','koltuk':'home','lamba':'home','nerede':'question',
+  'öpmek':'verb','portakal':'produce','şirket':'other','umut':'other',
+  'zor':'adjective','bıçak':'home','cimri':'adjective','çorba':'food',
+  'eski':'adjective','herkes':'other','ıslak':'adjective','ince':'adjective',
+  'kalem':'other','kitap':'other','masa':'home','tabak':'home',
+  'renk':'color','para':'other','şarap':'food','üzüm':'produce',
+  'vazo':'home','öder':'verb','kar':'nature','iyi geceler':'greeting',
+  'otuz':'number','kırk':'number','elli':'number','altmış':'number',
+  'yetmiş':'number','seksen':'number','doksan':'number','yüz':'number',
+  // ── Seed 3 ──────────────────────────────────────────
+  'sigara içmek':'other','hap':'other','şişe':'other','yatak':'home',
+  'konuk':'other','alıcı':'other','aile':'family','ebeveyn':'family',
+  'baba':'family','anne':'family','koca':'family','eş':'family',
+  'dede':'family','nine':'family','kardeş':'family','iş':'other',
+  'sürücü':'profession','öğrenci':'profession','muhasebeci':'profession',
+  'hemşire':'profession','cami':'city','nehir':'nature','otel':'city',
+  'banka':'city','sinema':'city','orman':'nature','dükkan':'city',
+  'mutfak':'home','balkon':'home','banyo':'home','duş':'home',
+  'tuvalet':'home','zemin':'home','salon':'home','yatak odası':'home',
+  'anahtar':'home','ayna':'home','yabancı':'other','komşu':'other',
+  'ceviz':'produce','dondurma':'food','çörek':'food','ananas':'produce',
+  'şeftali':'produce','kavun':'produce','bayram':'other','yarın':'time',
+  'din':'other','hafta':'time','isim':'other','soyadı':'other',
+  'numarası':'other','doğum günü':'other','evli':'other','telefon':'other',
+  'mendil':'other','harita':'other','kağıt':'other','oyuncak':'other',
+  'balon':'other','hediye':'other','eldiven':'clothing','şapka':'clothing',
+  'ceket':'clothing','çorap':'clothing','kazak':'clothing','dil':'body',
+  'ağız':'body','kişi':'other','boyun':'body','yanak':'body',
+  'nereye':'question','hangi':'question','ne zaman':'question',
+  'genç':'adjective','aç':'adjective','kötü':'adjective','sonraki':'adjective',
+  'hızlı':'adjective','yavaş':'adjective','yumuşak':'adjective',
+  'dikkatli':'adjective','hazır':'adjective','ana':'adjective',
+  'zaten':'other','şimdi':'time','tüm':'other','yalan':'other',
+  'ateş':'other','silah':'other','sorun':'other','şaka':'other',
+  'şans':'other','fiyat':'other','boyut':'other','müzik':'other',
+  'parti':'other','yazık':'other','seçmek':'verb','düşmek':'verb',
+  'ben':'pronoun','sen':'pronoun','biz':'pronoun','siz':'pronoun',
+  'onlar':'pronoun','hoşlanmak':'verb','almak':'verb','korkmak':'verb',
+  'satın almak':'verb','arka':'preposition','ön':'preposition',
+  'alt':'preposition','omuz':'body','karın':'body','fikir':'other',
+  'tatmak':'verb','tırnak':'body','sakal':'body','kaş':'body',
+  'deri':'body','diz':'body','beyin':'body','kalp':'body',
+  'meme':'body','erkek torun':'family','kız torun':'family',
+  'koyu renk':'color','açık renk':'color','kırmızı':'color','mavi':'color',
+  'sarı':'color','yeşil':'color','benzin istasyonu':'transport',
+  'ağustos':'time','eczane':'city','fakir':'adjective','beyaz':'color',
+  'hamile':'adjective','rahatsız etmek':'verb','bilardo':'other',
+  'borsa':'other','ağrı':'other','hasta':'adjective','kiraz':'produce',
+  'rüzgar':'nature','veteriner':'profession','viski':'food','votka':'food',
+  'savaş':'other','par':'other','yaş':'other','mükafat':'other',
+  'geri dönmek':'verb','etrafında':'preposition','kurt':'animal',
+  'önde':'preposition','varış saati':'transport','buluşmak':'verb',
+  'seçim':'other','giriş yasak':'phrase','giriş ücretli':'phrase',
+  'jimnastik':'other','derin':'adjective','buruk':'adjective',
+  'derece':'other','kuyruk':'animal','aralık':'time','demokrasi':'other',
+  'tutmak':'verb','kazanlar':'other','anaokulu':'city','vahşi':'adjective',
+  'eklemek':'verb','sürmek':'verb','evraklar':'other','tahta':'other',
+  'dövüşmek':'verb','düşünmek':'verb','nefes almak':'verb','şikayet':'other',
+  'beklemek':'verb','bayan':'other','yaşamak':'verb','yakmak':'verb',
+  'yasa':'other','yasal':'adjective','yasaklamak':'verb',
+  // ── Seed 4 ──────────────────────────────────────────
+  'esrar':'other','şimşek / gök gürültüsü':'nature','kamyon':'transport',
+  'kan grubu':'other','düz':'adjective','kızartmak':'verb','şemsiye':'other',
+  'diş macunu':'other','diş fırçası':'other','aramak':'verb',
+  'kaybolmak':'verb','temmuz':'time','haziran':'time','yoğurt':'food',
+  'kalamar':'food','kamera':'other','kaptan':'profession',
+  'kurşun kalem':'other','patates kızartması':'food','tencere':'home',
+  'takım':'other','krem':'other','kan':'other','hariç':'preposition',
+  'mısır':'produce','mayonez':'food','ilaç':'other','uçmak':'verb',
+  'limonata':'food','narenciye':'produce','tilki':'animal',
+  'yüz':'body','dirsek':'body','amatör':'other','kurbağa':'animal',
+  'mandalina':'produce','ayı':'animal','doğum yeri':'other','sevimli':'adjective',
+  'deniz ürünleri':'food','müze':'city','müzisyen':'profession',
+  'üzerinde':'preposition','umut etmek':'verb','bulmak':'verb',
+  'doldurmak':'verb','geçen hafta':'time','gökyüzü':'nature',
+  'dikkatsiz':'adjective','bağımsız':'adjective','kanunsuz':'adjective',
+  'nefret etmek':'verb','yanlış':'adjective','kir':'other','ihtiyaç':'other',
+  'şanssız':'adjective','öğle yemeği':'food','söz vermek':'verb',
+  'incitmek':'verb','yenileme':'other','eğitim':'other','açıklamak':'verb',
+  'yalnız':'adjective','ekim':'time','ameliyat':'other','muayene':'other',
+  'cevap':'other','cevap vermek':'verb','dinlenmek':'verb','reddetmek':'verb',
+  'ertelemek':'verb','açmak':'verb','göndermek':'verb','hata yapmak':'verb',
+  'dosya':'other','kuaför':'profession','pasaport':'other','yolcu':'other',
+  'emekli':'other','merak etmek':'verb','pilot':'profession','yazmak':'verb',
+  'içmek':'verb','yüzmek':'verb','ağlamak':'verb','galibiyet':'other',
+  'tekrar etmek':'verb','imza atmak':'verb','paylaşmak':'verb',
+  'göstermek':'verb','tebrik etmek':'verb','polis':'other','politika':'other',
+  'değiştirmek':'verb','ya da / veya':'preposition','ile':'preposition',
+  'pembe':'color','gri':'color','kahverengi':'color','duymak':'verb',
+  'gülmek':'verb','keskin':'adjective','o zaman':'other','gibi':'preposition',
+  'kadar':'preposition','arasında':'preposition','yardım':'other',
+  'binmek':'verb','inmek':'verb','sormak':'verb','dinlemek':'verb',
+  'anlatmak':'verb','tanıtmak':'verb','kutlamak':'verb','tek':'adjective',
+  'kalkmak':'verb','mide':'body','bavul':'other','kimin':'question',
+  'yok':'other','orada':'preposition','gürültülü':'adjective','trafik':'transport',
+  'hem… hem de':'preposition','hafif bavul':'other','ağır bavul':'other',
+  'ev hanımı':'profession','birkaç':'other','birçok':'other',
+  'gelecek':'time','sence':'other','bence':'other','sizce':'other',
+  'tatil':'other','müsait':'adjective','meşgul':'adjective','ışık':'other',
+  'alabilir miyim':'phrase','nereye gidiyorsun':'phrase',
+  'neredesin':'phrase','kaç yaşındasın':'phrase','ne yapıyorsun':'phrase',
+  'nereden':'question','kime':'question','kimden':'question',
+  'kimi':'question','niçin':'question','ne kadardır':'phrase',
+  // ── Seed 5 ──────────────────────────────────────────
+  'abi':'family','abla':'family','oğul':'family','kız':'family','karı':'family',
+  'amca':'family','hala':'family','teyze':'family','kuzen':'family','torun':'family',
+  'akraba':'family','evlat':'family','damat':'family','gelin':'family',
+  'kayınpeder':'family','kayınvalide':'family','kayınbirader':'family',
+  'baldız':'family','enişte':'family','üvey anne':'family','üvey baba':'family',
+  'üvey kardeş':'family','bebek':'family','yaşlı':'adjective','çift':'family',
+  'evlilik':'family','boşanma':'family','nişanlı':'family','nişan':'family',
+  'bekar':'adjective','akrabalık':'family','soyağacı':'family','ev halkı':'family',
+  'aile üyesi':'family','yakın':'adjective','uzak akraba':'family','kan bağı':'family',
+  'büyükanne':'family','büyükbaba':'family','torunlar':'family','çocukluk':'family',
+  'gençlik':'family','yaşlılık':'family','bakıcı':'profession','koruyucu aile':'family',
+  'evlat edinmek':'verb','akraba ziyareti':'family','aile toplantısı':'family',
+  'aile fotoğrafı':'family',
+  'asker':'profession','şoför':'profession','işçi':'profession','garson':'profession',
+  'aşçı':'profession','satıcı':'profession','müdür':'profession','sekreter':'profession',
+  'temizlikçi':'profession','usta':'profession','teknisyen':'profession','çiftçi':'profession',
+  'iş kadını':'profession','bankacı':'profession','mimar':'profession','eczacı':'profession',
+  'fotoğrafçı':'profession','sanatçı':'profession','aktör':'profession','aktris':'profession',
+  'terzi':'profession','kasiyer':'profession','barmen':'profession','tur rehberi':'profession',
+  'sporcu':'profession','antrenör':'profession','balıkçı':'profession','madenci':'profession',
+  'inşaatçı':'profession','boyacı':'profession','elektrikçi':'profession',
+  'tamirci':'profession','mekanikçi':'profession','güvenlik görevlisi':'profession',
+  'resepsiyonist':'profession','yönetici':'profession','danışman':'profession',
+  'programcı':'profession','yazılımcı':'profession','tasarımcı':'profession',
+  'editör':'profession','araştırmacı':'profession','bilim insanı':'profession',
+  'psikolog':'profession','terapist':'profession','memur':'profession',
+  'kargo görevlisi':'profession',
+  'baş':'body','kol':'body','el':'body','göğüs':'body','sırt':'body','bacak':'body',
+  'topuk':'body','alın':'body','kirpik':'body','çene':'body','boğaz':'body',
+  'damak':'body','diş eti':'body','bilek':'body','avuç':'body','bel':'body',
+  'kalça':'body','kas':'body','kemik':'body','damar':'body','akciğer':'body',
+  'karaciğer':'body','böbrek':'body','bağırsak':'body','omurga':'body','sinir':'body',
+  'ter':'body','göz kapağı':'body','kulak memesi':'body','göz bebeği':'body',
+  'diş kökü':'body','bel kemiği':'body','ense':'body','kasık':'body',
+  // ── Seed 6 ──────────────────────────────────────────
+  'pilav':'food','et':'food','tatlı':'food','şeker':'food','yağ':'food',
+  'bal':'food','reçel':'food','kek':'food','pasta':'food','bisküvi':'food',
+  'sandviç':'food','hamburger':'food','pizza':'food','ketçap':'food','hardal':'food',
+  'gazoz':'food','rakı':'food','çikolata':'food','kurabiye':'food','tost':'food',
+  'omlet':'food','köfte':'food','kebap':'food','döner':'food','lahmacun':'food',
+  'pide':'food','zeytin':'food','fındık':'food','fıstık':'food','bulgur':'food',
+  'mercimek':'food','nohut':'food',
+  'biber':'produce','çilek':'produce','marul':'produce','karnabahar':'produce',
+  'kayısı':'produce','erik':'produce','incir':'produce','hurma':'produce',
+  'kivi':'produce','böğürtlen':'produce','ahududu':'produce',
+  'yaban mersini':'produce','yeşil fasulye':'produce','pırasa':'produce',
+  'ıspanak':'produce','roka':'produce','dereotu':'produce','fesleğen':'produce',
+  'kereviz':'produce','enginar':'produce','tatlı patates':'produce',
+  'kapya biber':'produce','acı biber':'produce','şalgam':'produce',
+  'kabuk':'produce','çekirdek':'produce',
+  'balık':'animal','keçi':'animal','horoz':'animal','ördek':'animal',
+  'yılan':'animal','kaplan':'animal','böcek':'animal','karınca':'animal',
+  'sinek':'animal','kelebek':'animal','örümcek':'animal','geyik':'animal',
+  'zebra':'animal','kanguru':'animal','penguen':'animal','köpekbalığı':'animal',
+  'balina':'animal','yunus':'animal','ahtapot':'animal','yengeç':'animal',
+  'midye':'animal','kaplumbağa':'animal','kertenkele':'animal','kartal':'animal',
+  'şahin':'animal','baykuş':'animal','serçe':'animal','güvercin':'animal',
+  'martı':'animal','leylek':'animal','deve':'animal','manda':'animal',
+  'köstebek':'animal','kirpi':'animal','puma':'animal','panter':'animal',
+  'salyangoz':'animal','çekirge':'animal',
+  'kapı':'home','duvar':'home','halı':'home','kilit':'home','sehpa':'home',
+  'battaniye':'home','çarşaf':'home','havlu':'home',
+  'çamaşır makinesi':'home','bulaşık makinesi':'home','mikrodalga':'home',
+  'televizyon':'home','klima':'home','ısıtıcı':'home','vantilatör':'home',
+  'raf':'home','çekmece':'home','çöp kutusu':'home','süpürge':'home',
+  'priz':'home','kablo':'home','ampul':'home','sigorta':'home','garaj':'home',
+  'çit':'home','kapı zili':'home','alarm':'home','çıkış':'home','koridor':'home',
+  // ── Seed 7 ──────────────────────────────────────────
+  'bu':'pronoun','şu':'pronoun',
+  'neden':'question','nasıl':'question',
+  'yıldız':'nature','dağ':'nature','yağmur':'nature',
+  'otobüs':'transport',
+  'market':'city','restoran':'city',
+  'kadın':'other',
+  'sıcak':'adjective','soğuk':'adjective',
+  'görmek':'verb','konuşmak':'verb','uyumak':'verb','oturmak':'verb',
+};
+
+function getCat(w) {
+  return w.category || WORD_CATEGORIES[w.tr] || 'other';
+}
+
+// ── Storage ────────────────────────────────────────────
+const STORE_KEY = 'yulya_kelime_v1';
+
+let _memoryStore = null; // in-memory fallback when localStorage is unavailable
+
+function isLocalStorageAvailable() {
+  try {
+    const t = '__ls_test__';
+    localStorage.setItem(t, '1');
+    localStorage.removeItem(t);
+    return true;
+  } catch { return false; }
+}
+
+const _lsAvailable = isLocalStorageAvailable();
+
+function loadWords() {
+  if (!_lsAvailable) return _memoryStore ? [..._memoryStore] : [];
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveWords(words) {
+  if (!_lsAvailable) { _memoryStore = [...words]; return; }
+  try {
+    localStorage.setItem(STORE_KEY, JSON.stringify(words));
+  } catch (e) {
+    // QuotaExceededError on mobile — keep existing data, store only in memory
+    _memoryStore = [...words];
+    console.warn('localStorage full, using memory fallback:', e);
+  }
+}
+
+
+// ── Tabs ───────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('nav button')[name === 'quiz' ? 0 : 1].classList.add('active');
+  if (name === 'quiz') initQuiz();
+}
+
+// ── Add Word ───────────────────────────────────────────
+function addWord(e) {
+  e.preventDefault();
+  const tr       = document.getElementById('inp-tr').value.trim();
+  const en       = document.getElementById('inp-en').value.trim();
+  const notes    = document.getElementById('inp-notes').value.trim();
+  const category = document.getElementById('inp-cat').value || 'other';
+
+  const words = loadWords();
+  if (words.some(w => w.tr.toLowerCase() === tr.toLowerCase())) {
+    showMsg('add-msg', 'Такое слово уже есть!', 'error');
+    return;
+  }
+
+  words.push({
+    id: Date.now().toString(),
+    tr, en, notes, category,
+    addedAt: Date.now(),
+    status: 'new',
+    correct: 0,
+    incorrect: 0
+  });
+  saveWords(words);
+
+  document.getElementById('inp-tr').value = '';
+  document.getElementById('inp-en').value = '';
+  document.getElementById('inp-notes').value = '';
+  document.getElementById('inp-cat').value = 'other';
+  document.getElementById('inp-tr').focus();
+  showMsg('add-msg', `«${tr}» добавлено!`, 'success');
+  populateCatFilter();
+  renderWordList();
+}
+
+function showMsg(id, text, type) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg ' + type + ' show';
+  setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── Word List ──────────────────────────────────────────
+function renderWordItem(w) {
+  const isNew = (w.status || 'new') === 'new';
+  const total = w.correct + w.incorrect;
+  const statsHtml = total > 0
+    ? `<div class="word-stats">
+         <span class="stat-pill stat-correct">✓ ${w.correct}</span>
+         <span class="stat-pill stat-incorrect">✗ ${w.incorrect}</span>
+       </div>`
+    : '';
+  return `
+    <div class="word-item" id="wi-${w.id}">
+      <div class="word-item-main">
+        <div class="word-tr">
+          ${escHtml(w.tr)}
+          ${isNew ? '<span class="badge-new">НОВОЕ</span>' : ''}
+        </div>
+        <div class="word-en">${escHtml(w.en)}</div>
+        ${w.notes ? `<div class="word-notes">${escHtml(w.notes)}</div>` : ''}
+      </div>
+      ${statsHtml}
+      <button class="btn-icon" title="Edit" onclick="editWord('${w.id}')">✏️</button>
+      <button class="btn-icon" title="Delete" onclick="deleteWord('${w.id}')">🗑️</button>
+    </div>`;
+}
+
+
+let activeCatFilter = '';
+
+function setCatFilter(cat) {
+  activeCatFilter = cat;
+  renderWordList();
+}
+
+function renderWordList() {
+  const words  = loadWords();
+  const query  = document.getElementById('search-inp').value.trim().toLowerCase();
+  const base   = words;
+  const baseCat = activeCatFilter ? base.filter(w => getCat(w) === activeCatFilter) : base;
+  const filtered = query
+    ? baseCat.filter(w =>
+        w.tr.toLowerCase().includes(query) ||
+        w.en.toLowerCase().includes(query) ||
+        (w.notes||'').toLowerCase().includes(query))
+    : baseCat;
+
+  const newCount     = words.filter(w => (w.status||'new') === 'new').length;
+  const learnedCount = words.length - newCount;
+  document.getElementById('word-count').innerHTML =
+    `${words.length} ${words.length === 1 ? 'слово' : words.length < 5 ? 'слова' : 'слов'} всего` +
+    (newCount > 0 ? ` &nbsp;·&nbsp; <span style="color:#1d4ed8;font-weight:700">${newCount} новых</span>` : '') +
+    (learnedCount > 0 ? ` &nbsp;·&nbsp; <span style="color:var(--green);font-weight:700">${learnedCount} выучено</span>` : '');
+
+  const listEl = document.getElementById('word-list');
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = words.length === 0
+      ? `<div class="empty-state"><div class="emoji">🌱</div><p>Слов пока нет — добавьте первое!</p></div>`
+      : `<div class="empty-state"><div class="emoji">🔍</div><p>Ничего не найдено.</p></div>`;
+    return;
+  }
+
+  listEl.innerHTML = filtered.slice().reverse().map(w => renderWordItem(w)).join('');
+}
+
+function deleteWord(id) {
+  saveWords(loadWords().filter(w => w.id !== id));
+  renderWordList();
+}
+
+// ── Edit Word ──────────────────────────────────────────
+let editingWordId = null;
+
+function editWord(id) {
+  const words = loadWords();
+  const w = words.find(w => w.id === id);
+  if (!w) return;
+  editingWordId = id;
+  document.getElementById('edit-tr').value    = w.tr;
+  document.getElementById('edit-en').value    = w.en;
+  document.getElementById('edit-notes').value = w.notes || '';
+  document.getElementById('edit-cat').value   = w.category || 'other';
+  const modal = document.getElementById('edit-modal');
+  modal.style.display = 'flex';
+}
+
+function closeEditModal() {
+  document.getElementById('edit-modal').style.display = 'none';
+  editingWordId = null;
+}
+
+function saveEditedWord() {
+  if (!editingWordId) return;
+  const tr    = document.getElementById('edit-tr').value.trim();
+  const en    = document.getElementById('edit-en').value.trim();
+  const notes = document.getElementById('edit-notes').value.trim();
+  const cat   = document.getElementById('edit-cat').value;
+  if (!tr || !en) return;
+  const words = loadWords();
+  const idx   = words.findIndex(w => w.id === editingWordId);
+  if (idx !== -1) {
+    words[idx].tr       = tr;
+    words[idx].en       = en;
+    words[idx].notes    = notes;
+    words[idx].category = cat;
+    saveWords(words);
+  }
+  closeEditModal();
+  renderWordList();
+}
+
+// Close edit modal when clicking backdrop
+document.getElementById('edit-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeEditModal();
+});
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Difficult filter (word list) ───────────────────────
+let difficultFilterOn = false;
+
+function isDifficult(w) {
+  return w.hardPinned || (w.incorrect >= 2 && w.incorrect > w.correct);
+}
+
+function toggleDifficultFilter() {
+  difficultFilterOn = !difficultFilterOn;
+  const btn = document.getElementById('difficult-toggle');
+  if (difficultFilterOn) {
+    btn.style.background = '#fef3c7';
+    btn.style.color = '#92400e';
+    btn.style.borderColor = '#f59e0b';
+    btn.textContent = '🔥 Сложные ✓';
+  } else {
+    btn.style.background = '';
+    btn.style.color = '';
+    btn.style.borderColor = '';
+    btn.textContent = '🔥 Сложные';
+  }
+  renderWordList();
+}
+
+// ── Quiz State ─────────────────────────────────────────
+let quizMode = 'learn';   // 'learn' | 'hard' | 'repeat'
+let deck = [];
+let deckIdx = 0;
+let sessionCorrect = 0;
+let sessionIncorrect = 0;
+let sessionPromoted = 0;
+let cardFlipped = false;
+
+// ── Quiz Init ──────────────────────────────────────────
+function initQuiz() {
+  const words = loadWords();
+  const noWrap  = document.getElementById('quiz-no-words');
+  const quizArea = document.getElementById('quiz-area');
+  if (words.length === 0) {
+    noWrap.style.display = '';
+    quizArea.style.display = 'none';
+  } else {
+    noWrap.style.display = 'none';
+    quizArea.style.display = '';
+    updateModeBadges();
+    startQuiz();
+  }
+}
+
+function updateModeBadges() {
+  const words = loadWords();
+  const newCount  = words.filter(w => (w.status||'new') === 'new').length;
+  const hardCount = Math.min(30, words.filter(w => w.hardPinned || w.incorrect > 0).length);
+  document.getElementById('badge-new-count').textContent  = newCount;
+  document.getElementById('badge-hard-count').textContent = hardCount;
+  document.getElementById('badge-all-count').textContent  = words.length;
+}
+
+function setQuizMode(mode) {
+  quizMode = mode;
+  deckListOpen = false;
+  document.getElementById('mode-btn-learn').classList.toggle('active',  mode === 'learn');
+  document.getElementById('mode-btn-hard').classList.toggle('active',   mode === 'hard');
+  document.getElementById('mode-btn-repeat').classList.toggle('active', mode === 'repeat');
+  startQuiz();
+}
+
+// ── Build deck ─────────────────────────────────────────
+function buildDeck(words) {
+  return [...words].sort(() => Math.random() - .5);
+}
+
+// ── Start Quiz ─────────────────────────────────────────
+function startQuiz() {
+  updateModeBadges();
+  const allWords = loadWords();
+
+  // Base pool by mode (no slice/sort for hard yet — applied after group filter)
+  let pool = quizMode === 'learn'
+    ? allWords.filter(w => (w.status || 'new') === 'new')
+    : quizMode === 'hard'
+      ? allWords.filter(w => w.hardPinned || w.incorrect > 0)
+      : allWords;
+
+  // Populate quiz-group select from this mode's base pool
+  const grpSel = document.getElementById('quiz-group');
+  const prevGrp = grpSel.value;
+  grpSel.innerHTML = '<option value="">Все группы</option>';
+  const catCounts = {};
+  pool.forEach(w => { const c = getCat(w); catCounts[c] = (catCounts[c] || 0) + 1; });
+  const catOrd = Object.keys(CATEGORIES);
+  Object.keys(catCounts)
+    .sort((a, b) => {
+      const ia = catOrd.indexOf(a), ib = catOrd.indexOf(b);
+      return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+    })
+    .forEach(cat => {
+      const o = document.createElement('option');
+      o.value = cat;
+      o.textContent = (CATEGORIES[cat] || cat) + ' · ' + catCounts[cat];
+      grpSel.appendChild(o);
+    });
+  if ([...grpSel.options].some(o => o.value === prevGrp)) grpSel.value = prevGrp;
+
+  // Apply group filter
+  if (grpSel.value) pool = pool.filter(w => getCat(w) === grpSel.value);
+
+  // For hard mode: sort by difficulty then cap at 30 (after group filter)
+  if (quizMode === 'hard') {
+    pool = pool
+      .sort((a, b) => {
+        if (a.hardPinned !== b.hardPinned) return a.hardPinned ? -1 : 1;
+        return (b.incorrect - b.correct) - (a.incorrect - a.correct);
+      })
+      .slice(0, 30);
+  }
+
+  // Empty pool banners
+  if (pool.length === 0) {
+    const msgs = {
+      learn: { icon: '✅', title: 'Всё выучено!', text: 'Нет новых слов. Добавьте новые или переходите в «Повторить все».' },
+      hard:  { icon: '🏆', title: 'Сложных слов нет!', text: 'Вы отлично справляетесь — ни одного трудного слова.' },
+      repeat:{ icon: '✅', title: 'Список пуст!',  text: 'Добавьте слова, чтобы начать повторение.' },
+    };
+    const m = msgs[quizMode];
+    document.getElementById('quiz-card-wrap').innerHTML =
+      `<div class="learn-done-banner">
+        <div class="big">${m.icon}</div>
+        <h2>${m.title}</h2>
+        <p>${m.text}</p>
+      </div>`;
+    document.getElementById('quiz-actions').style.display = 'none';
+    document.getElementById('quiz-done').style.display = 'none';
+    document.getElementById('card-counter').textContent = '';
+    document.getElementById('progress-fill').style.width = '0%';
+    resetSessionBar();
+    renderDeckWordList();
+    return;
+  }
+
+  deck = buildDeck(pool);
+  deckIdx = 0;
+  sessionCorrect = 0;
+  sessionIncorrect = 0;
+  sessionPromoted = 0;
+
+  document.getElementById('quiz-done').style.display = 'none';
+  document.getElementById('quiz-actions').style.display = 'none';
+
+  updateSessionBar();
+  showCard();
+  renderDeckWordList();
+}
+
+function resetSessionBar() {
+  document.getElementById('stat-total').textContent  = '0 слов';
+  document.getElementById('stat-correct').textContent = '0 верно';
+}
+
+// ── Show card ──────────────────────────────────────────
+function showCard() {
+  if (deckIdx >= deck.length) {
+    endQuiz();
+    return;
+  }
+  cardFlipped = false;
+  const word = deck[deckIdx];
+  const dir  = document.getElementById('quiz-dir').value;
+  const showTr = dir === 'tr-en' || (dir === 'random' && Math.random() > .5);
+  word._showTr = showTr;
+
+  const front    = showTr ? word.tr : word.en;
+  const back     = showTr ? word.en : word.tr;
+  const frontLbl = showTr ? '🇹🇷 Turkish' : '🇷🇺 Russian';
+  const backLbl  = showTr ? '🇷🇺 Russian' : '🇹🇷 Turkish';
+
+  document.getElementById('quiz-card-wrap').innerHTML = `
+    <div class="card-scene" onclick="flipCard()">
+      <div class="card-flip" id="flip-card">
+        <div class="card-face card-front">
+          <div class="card-label">${frontLbl}</div>
+          <div class="card-word">${escHtml(front)}</div>
+          ${word.notes && showTr ? `<div class="card-hint">${escHtml(word.notes)}</div>` : ''}
+          <div class="card-tap"><span>👆</span> перевод</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-label">${backLbl}</div>
+          <div class="card-word">${escHtml(back)}</div>
+          ${word.notes && !showTr ? `<div class="card-hint">${escHtml(word.notes)}</div>` : ''}
+        </div>
+      </div>
+    </div>`;
+
+  document.getElementById('quiz-actions').style.display = 'none';
+  document.getElementById('card-counter').textContent = `Карточка ${deckIdx + 1} из ${deck.length}`;
+  document.getElementById('progress-fill').style.width = (deckIdx / deck.length * 100) + '%';
+}
+
+function flipCard() {
+  if (cardFlipped) return;
+  cardFlipped = true;
+  document.getElementById('flip-card').classList.add('flipped');
+  setTimeout(() => renderActionButtons(), 300);
+}
+
+function renderActionButtons() {
+  const actEl = document.getElementById('quiz-actions');
+  const word = deck[deckIdx];
+  const pinned = word && word.hardPinned;
+
+  let mainBtns;
+  if (quizMode === 'learn') {
+    mainBtns = `
+      <button class="btn btn-amber" onclick="markCard(false, false)">😓 Ещё учу</button>
+      <button class="btn btn-indigo" onclick="markCard(true, true)">🎓 Выучил!</button>`;
+  } else {
+    mainBtns = `
+      <button class="btn btn-amber" onclick="markCard(false, false)">😓 Не знаю</button>
+      <button class="btn btn-green" onclick="markCard(true, false)">✓ Знаю!</button>`;
+  }
+
+  const pinBtn = `
+    <div style="width:100%;display:flex;justify-content:center;margin-top:2px">
+      <button class="btn btn-sm" onclick="togglePin('${word.id}')" style="
+        background:${pinned ? '#fef3c7' : 'var(--gray100)'};
+        color:${pinned ? '#92400e' : 'var(--gray600)'};
+        border:1.5px solid ${pinned ? '#f59e0b' : 'var(--gray200)'};
+        gap:5px;
+      ">${pinned ? '📌 В сложных' : '📌 В сложные'}</button>
+    </div>`;
+
+  actEl.innerHTML = mainBtns + pinBtn;
+  actEl.style.display = 'flex';
+}
+
+function togglePin(id) {
+  const words = loadWords();
+  const idx = words.findIndex(w => w.id === id);
+  if (idx !== -1) {
+    words[idx].hardPinned = !words[idx].hardPinned;
+    saveWords(words);
+    if (deck[deckIdx]) deck[deckIdx].hardPinned = words[idx].hardPinned;
+  }
+  renderActionButtons();
+}
+
+// ── Mark card ──────────────────────────────────────────
+function markCard(correct, promote) {
+  const words = loadWords();
+  const word  = deck[deckIdx];
+  const idx   = words.findIndex(w => w.id === word.id);
+  if (idx !== -1) {
+    if (correct) words[idx].correct++;
+    else         words[idx].incorrect++;
+    if (promote) words[idx].status = 'learned';
+    if (!correct && (quizMode === 'repeat' || quizMode === 'hard')) words[idx].status = 'new';
+    saveWords(words);
+  }
+
+  if (correct) sessionCorrect++;
+  else         sessionIncorrect++;
+  if (promote) sessionPromoted++;
+
+  deckIdx++;
+  updateSessionBar();
+  showCard();
+}
+
+function updateSessionBar() {
+  document.getElementById('stat-total').textContent   = `${deck.length} слов`;
+  document.getElementById('stat-correct').textContent = `${sessionCorrect} верно`;
+}
+
+// ── End quiz ───────────────────────────────────────────
+function endQuiz() {
+  document.getElementById('quiz-card-wrap').innerHTML = '';
+  document.getElementById('quiz-actions').style.display = 'none';
+  document.getElementById('card-counter').textContent = '';
+  document.getElementById('progress-fill').style.width = '100%';
+
+  const total = sessionCorrect + sessionIncorrect;
+  const pct   = total === 0 ? 0 : Math.round((sessionCorrect / total) * 100);
+
+  document.getElementById('done-correct').textContent = sessionCorrect;
+  document.getElementById('done-total').textContent   = total;
+  document.getElementById('done-pct').textContent     = pct + '%';
+
+  if (quizMode === 'learn') {
+    document.getElementById('done-title').textContent = 'Сессия завершена!';
+    document.getElementById('done-sub').textContent   = `Вы перенесли ${sessionPromoted} сл. в коллекцию.`;
+    document.getElementById('done-correct-lbl').textContent = 'ВЕРНО';
+    document.getElementById('done-promoted').textContent = sessionPromoted;
+    document.getElementById('done-promoted-box').style.display = '';
+  } else if (quizMode === 'hard') {
+    document.getElementById('done-title').textContent = 'Сложные — раунд завершён!';
+    document.getElementById('done-sub').textContent   =
+      sessionIncorrect > 0
+        ? `${sessionIncorrect} сл. возвращено в «Новые слова». Продолжайте тренироваться!`
+        : '🏆 Отлично — вы ответили верно на все сложные слова!';
+    document.getElementById('done-correct-lbl').textContent = 'ВЕРНО';
+    document.getElementById('done-promoted-box').style.display = 'none';
+  } else {
+    document.getElementById('done-title').textContent = 'Раунд завершён!';
+    const movedBack = sessionIncorrect;
+    document.getElementById('done-sub').textContent   =
+      movedBack > 0
+        ? `${movedBack} сл. возвращено в «Новые слова».`
+        : 'Отлично — ни одного слова не возвращено!';
+    document.getElementById('done-correct-lbl').textContent = 'ВЕРНО';
+    document.getElementById('done-promoted-box').style.display = 'none';
+  }
+
+  document.getElementById('quiz-done').style.display = '';
+  updateModeBadges();
+}
+
+// ── Deck word list (shown below quiz card, collapsible) ─
+let deckListOpen = false;
+
+function toggleDeckList() {
+  deckListOpen = !deckListOpen;
+  renderDeckWordList();
+}
+
+function renderDeckWordList() {
+  const wrap = document.getElementById('quiz-deck-list');
+  if (!wrap) return;
+
+  const allWords = loadWords();
+  let pool = quizMode === 'learn'
+    ? allWords.filter(w => (w.status || 'new') === 'new')
+    : quizMode === 'hard'
+      ? allWords.filter(w => w.hardPinned || w.incorrect > 0)
+      : allWords;
+
+  const grpSel = document.getElementById('quiz-group');
+  if (grpSel && grpSel.value) pool = pool.filter(w => getCat(w) === grpSel.value);
+  if (quizMode === 'hard') pool = pool.sort((a, b) => {
+    if (a.hardPinned !== b.hardPinned) return a.hardPinned ? -1 : 1;
+    return (b.incorrect - b.correct) - (a.incorrect - a.correct);
+  }).slice(0, 30);
+
+  if (pool.length === 0) { wrap.innerHTML = ''; return; }
+
+  const modeLabel = { learn: '🌱 Новые', hard: '🔥 Сложные', repeat: '🔁 Все' }[quizMode] || '';
+  const chevron = deckListOpen ? '▲' : '▼';
+
+  const listHtml = deckListOpen ? `
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
+      ${pool.map(w => `
+        <div style="display:flex;align-items:center;gap:10px;background:var(--gray50);border:1.5px solid var(--gray200);border-radius:10px;padding:10px 14px">
+          <div style="flex:1;min-width:0">
+            <span style="font-weight:700;color:var(--gray900)">${escHtml(w.tr)}</span>
+            <span style="color:var(--gray400);margin:0 6px">—</span>
+            <span style="color:var(--gray600);font-size:.92rem">${escHtml(w.en)}</span>
+            ${w.notes ? `<div style="font-size:.78rem;color:var(--gray400);font-style:italic;margin-top:2px">${escHtml(w.notes)}</div>` : ''}
+          </div>
+        </div>`).join('')}
+    </div>` : '';
+
+  wrap.innerHTML = `
+    <div style="margin-top:16px">
+      <button onclick="toggleDeckList()" style="
+        width:100%;display:flex;align-items:center;justify-content:space-between;
+        background:var(--gray100);border:1.5px solid var(--gray200);border-radius:10px;
+        padding:11px 16px;cursor:pointer;font-family:inherit;transition:background .15s;
+      " onmouseover="this.style.background='var(--gray200)'" onmouseout="this.style.background='var(--gray100)'">
+        <span style="font-size:.9rem;font-weight:700;color:var(--gray700);display:flex;align-items:center;gap:8px">
+          ${modeLabel} — слова в этой вкладке
+          <span style="font-size:.73rem;font-weight:600;background:var(--white);border:1px solid var(--gray200);color:var(--gray500);padding:2px 8px;border-radius:99px">${pool.length}</span>
+        </span>
+        <span style="font-size:.75rem;color:var(--gray400)">${chevron}</span>
+      </button>
+      ${listHtml}
+    </div>`;
+}
+
+// ── Seed data (Юля) ────────────────────────────────────
+const SEED_KEY_Y = 'yulya_seeded_v1';
+const SEED_WORDS_Y = [
+  // Семья
+  { tr: 'anne',       en: 'мама',                       category: 'family' },
+  { tr: 'baba',       en: 'папа',                       category: 'family' },
+  { tr: 'kardeş',     en: 'брат / сестра',              category: 'family' },
+  { tr: 'abi',        en: 'старший брат',               category: 'family' },
+  { tr: 'abla',       en: 'старшая сестра',             category: 'family' },
+  { tr: 'çocuk',      en: 'ребёнок',                    category: 'family' },
+  { tr: 'oğul',       en: 'сын',                        category: 'family' },
+  { tr: 'kız',        en: 'дочь',                       category: 'family' },
+  { tr: 'karı',       en: 'жена',                       category: 'family' },
+  { tr: 'koca',       en: 'муж',                        category: 'family' },
+  { tr: 'aile',       en: 'семья',                      category: 'family' },
+  { tr: 'dede',       en: 'дедушка',                    category: 'family' },
+  { tr: 'nine',       en: 'бабушка',                    category: 'family' },
+  { tr: 'amca',       en: 'дядя',                       category: 'family' },
+  { tr: 'hala',       en: 'тётя (со стороны отца)',     category: 'family' },
+  { tr: 'teyze',      en: 'тётя (со стороны матери)',   category: 'family' },
+  { tr: 'kuzen',      en: 'двоюродный брат / сестра',  category: 'family' },
+  { tr: 'torun',      en: 'внук / внучка',              category: 'family' },
+  { tr: 'akraba',     en: 'родственник',                category: 'family' },
+  { tr: 'evlat',      en: 'ребёнок / дитя',            category: 'family' },
+  // Профессии
+  { tr: 'doktor',     en: 'врач',                       category: 'profession' },
+  { tr: 'öğretmen',   en: 'учитель',                    category: 'profession' },
+  { tr: 'mühendis',   en: 'инженер',                    category: 'profession' },
+  { tr: 'avukat',     en: 'адвокат',                    category: 'profession' },
+  { tr: 'polis',      en: 'полицейский',                category: 'profession' },
+  { tr: 'asker',      en: 'солдат',                     category: 'profession' },
+  { tr: 'şoför',      en: 'водитель',                   category: 'profession' },
+  { tr: 'pilot',      en: 'пилот',                      category: 'profession' },
+  { tr: 'işçi',       en: 'рабочий',                    category: 'profession' },
+  { tr: 'garson',     en: 'официант',                   category: 'profession' },
+  { tr: 'aşçı',       en: 'повар',                      category: 'profession' },
+  { tr: 'satıcı',     en: 'продавец',                   category: 'profession' },
+  { tr: 'müdür',      en: 'директор',                   category: 'profession' },
+  { tr: 'sekreter',   en: 'секретарь',                  category: 'profession' },
+  { tr: 'temizlikçi', en: 'уборщик',                    category: 'profession' },
+  { tr: 'usta',       en: 'мастер',                     category: 'profession' },
+  { tr: 'teknisyen',  en: 'техник',                     category: 'profession' },
+  { tr: 'çiftçi',     en: 'фермер',                     category: 'profession' },
+  { tr: 'kuaför',     en: 'парикмахер',                 category: 'profession' },
+  { tr: 'iş adamı',   en: 'бизнесмен',                  category: 'profession' },
+  // Части тела
+  { tr: 'baş',        en: 'голова',                     category: 'body' },
+  { tr: 'saç',        en: 'волосы',                     category: 'body' },
+  { tr: 'yüz',        en: 'лицо',                       category: 'body' },
+  { tr: 'göz',        en: 'глаз',                       category: 'body' },
+  { tr: 'kulak',      en: 'ухо',                        category: 'body' },
+  { tr: 'burun',      en: 'нос',                        category: 'body' },
+  { tr: 'ağız',       en: 'рот',                        category: 'body' },
+  { tr: 'diş',        en: 'зуб',                        category: 'body' },
+  { tr: 'dil',        en: 'язык',                       category: 'body' },
+  { tr: 'boyun',      en: 'шея',                        category: 'body' },
+  { tr: 'omuz',       en: 'плечо',                      category: 'body' },
+  { tr: 'kol',        en: 'рука',                       category: 'body' },
+  { tr: 'el',         en: 'кисть',                      category: 'body' },
+  { tr: 'parmak',     en: 'палец',                      category: 'body' },
+  { tr: 'göğüs',      en: 'грудь',                      category: 'body' },
+  { tr: 'sırt',       en: 'спина',                      category: 'body' },
+  { tr: 'karın',      en: 'живот',                      category: 'body' },
+  { tr: 'bacak',      en: 'нога',                       category: 'body' },
+  { tr: 'diz',        en: 'колено',                     category: 'body' },
+  { tr: 'ayak',       en: 'стопа',                      category: 'body' },
+  // Еда и напитки
+  { tr: 'ekmek',      en: 'хлеб',                       category: 'food' },
+  { tr: 'su',         en: 'вода',                       category: 'food' },
+  { tr: 'çay',        en: 'чай',                        category: 'food' },
+  { tr: 'kahve',      en: 'кофе',                       category: 'food' },
+  { tr: 'süt',        en: 'молоко',                     category: 'food' },
+  { tr: 'peynir',     en: 'сыр',                        category: 'food' },
+  { tr: 'yumurta',    en: 'яйцо',                       category: 'food' },
+  { tr: 'çorba',      en: 'суп',                        category: 'food' },
+  { tr: 'pilav',      en: 'рис',                        category: 'food' },
+  { tr: 'makarna',    en: 'макароны',                   category: 'food' },
+  { tr: 'et',         en: 'мясо',                       category: 'food' },
+  { tr: 'tavuk',      en: 'курица',                     category: 'food' },
+  { tr: 'balık',      en: 'рыба',                       category: 'food' },
+  { tr: 'salata',     en: 'салат',                      category: 'food' },
+  { tr: 'tatlı',      en: 'десерт',                     category: 'food' },
+  { tr: 'şeker',      en: 'сахар',                      category: 'food' },
+  { tr: 'tuz',        en: 'соль',                       category: 'food' },
+  { tr: 'biber',      en: 'перец',                      category: 'food' },
+  { tr: 'yağ',        en: 'масло',                      category: 'food' },
+  { tr: 'bal',        en: 'мёд',                        category: 'food' },
+  // Овощи и фрукты
+  { tr: 'elma',       en: 'яблоко',                     category: 'produce' },
+  { tr: 'armut',      en: 'груша',                      category: 'produce' },
+  { tr: 'portakal',   en: 'апельсин',                   category: 'produce' },
+  { tr: 'mandalina',  en: 'мандарин',                   category: 'produce' },
+  { tr: 'muz',        en: 'банан',                      category: 'produce' },
+  { tr: 'çilek',      en: 'клубника',                   category: 'produce' },
+  { tr: 'kiraz',      en: 'черешня',                    category: 'produce' },
+  { tr: 'üzüm',       en: 'виноград',                   category: 'produce' },
+  { tr: 'limon',      en: 'лимон',                      category: 'produce' },
+  { tr: 'karpuz',     en: 'арбуз',                      category: 'produce' },
+  { tr: 'kavun',      en: 'дыня',                       category: 'produce' },
+  { tr: 'domates',    en: 'помидор',                    category: 'produce' },
+  { tr: 'salatalık',  en: 'огурец',                     category: 'produce' },
+  { tr: 'patates',    en: 'картошка',                   category: 'produce' },
+  { tr: 'soğan',      en: 'лук',                        category: 'produce' },
+  { tr: 'sarımsak',   en: 'чеснок',                     category: 'produce' },
+  { tr: 'havuç',      en: 'морковь',                    category: 'produce' },
+  { tr: 'patlıcan',   en: 'баклажан',                   category: 'produce' },
+  { tr: 'kabak',      en: 'кабачок',                    category: 'produce' },
+  // Животные
+  { tr: 'köpek',      en: 'собака',                     category: 'animal' },
+  { tr: 'kedi',       en: 'кошка',                      category: 'animal' },
+  { tr: 'kuş',        en: 'птица',                      category: 'animal' },
+  { tr: 'at',         en: 'лошадь',                     category: 'animal' },
+  { tr: 'inek',       en: 'корова',                     category: 'animal' },
+  { tr: 'koyun',      en: 'овца',                       category: 'animal' },
+  { tr: 'keçi',       en: 'коза',                       category: 'animal' },
+  { tr: 'horoz',      en: 'петух',                      category: 'animal' },
+  { tr: 'ördek',      en: 'утка',                       category: 'animal' },
+  { tr: 'fare',       en: 'мышь',                       category: 'animal' },
+  { tr: 'yılan',      en: 'змея',                       category: 'animal' },
+  { tr: 'kaplan',     en: 'тигр',                       category: 'animal' },
+  { tr: 'aslan',      en: 'лев',                        category: 'animal' },
+  { tr: 'ayı',        en: 'медведь',                    category: 'animal' },
+  { tr: 'fil',        en: 'слон',                       category: 'animal' },
+  { tr: 'maymun',     en: 'обезьяна',                   category: 'animal' },
+  { tr: 'arı',        en: 'пчела',                      category: 'animal' },
+  { tr: 'böcek',      en: 'насекомое',                  category: 'animal' },
+  // Дом
+  { tr: 'ev',         en: 'дом',                        category: 'home' },
+  { tr: 'oda',        en: 'комната',                    category: 'home' },
+  { tr: 'kapı',       en: 'дверь',                      category: 'home' },
+  { tr: 'pencere',    en: 'окно',                       category: 'home' },
+  { tr: 'duvar',      en: 'стена',                      category: 'home' },
+  { tr: 'tavan',      en: 'потолок',                    category: 'home' },
+  { tr: 'zemin',      en: 'пол',                        category: 'home' },
+  { tr: 'mutfak',     en: 'кухня',                      category: 'home' },
+  { tr: 'banyo',      en: 'ванная',                     category: 'home' },
+  { tr: 'tuvalet',    en: 'туалет',                     category: 'home' },
+  { tr: 'yatak',      en: 'кровать',                    category: 'home' },
+  { tr: 'masa',       en: 'стол',                       category: 'home' },
+  { tr: 'sandalye',   en: 'стул',                       category: 'home' },
+  { tr: 'dolap',      en: 'шкаф',                       category: 'home' },
+  { tr: 'ayna',       en: 'зеркало',                    category: 'home' },
+  { tr: 'lamba',      en: 'лампа',                      category: 'home' },
+  { tr: 'perde',      en: 'штора',                      category: 'home' },
+  { tr: 'halı',       en: 'ковёр',                      category: 'home' },
+  { tr: 'balkon',     en: 'балкон',                     category: 'home' },
+  { tr: 'anahtar',    en: 'ключ',                       category: 'home' },
+  // Одежда
+  { tr: 'tişört',     en: 'футболка',                   category: 'clothing' },
+  { tr: 'gömlek',     en: 'рубашка',                    category: 'clothing' },
+  { tr: 'pantolon',   en: 'штаны',                      category: 'clothing' },
+  { tr: 'şort',       en: 'шорты',                      category: 'clothing' },
+  { tr: 'ceket',      en: 'куртка',                     category: 'clothing' },
+  { tr: 'mont',       en: 'пальто',                     category: 'clothing' },
+  { tr: 'kazak',      en: 'свитер',                     category: 'clothing' },
+  { tr: 'elbise',     en: 'платье',                     category: 'clothing' },
+  { tr: 'etek',       en: 'юбка',                       category: 'clothing' },
+  { tr: 'çorap',      en: 'носки',                      category: 'clothing' },
+  { tr: 'ayakkabı',   en: 'обувь',                      category: 'clothing' },
+  { tr: 'terlik',     en: 'тапки',                      category: 'clothing' },
+  { tr: 'kemer',      en: 'ремень',                     category: 'clothing' },
+  { tr: 'şapka',      en: 'шапка',                      category: 'clothing' },
+  { tr: 'gözlük',     en: 'очки',                       category: 'clothing' },
+  { tr: 'çanta',      en: 'сумка',                      category: 'clothing' },
+  { tr: 'kravat',     en: 'галстук',                    category: 'clothing' },
+  { tr: 'yağmurluk',  en: 'дождевик',                   category: 'clothing' },
+  { tr: 'atkı',       en: 'шарф',                       category: 'clothing' },
+  // Цвета
+  { tr: 'beyaz',      en: 'белый',                      category: 'color' },
+  { tr: 'siyah',      en: 'чёрный',                     category: 'color' },
+  { tr: 'kırmızı',    en: 'красный',                    category: 'color' },
+  { tr: 'mavi',       en: 'синий',                      category: 'color' },
+  { tr: 'yeşil',      en: 'зелёный',                    category: 'color' },
+  { tr: 'sarı',       en: 'жёлтый',                     category: 'color' },
+  { tr: 'turuncu',    en: 'оранжевый',                  category: 'color' },
+  { tr: 'mor',        en: 'фиолетовый',                 category: 'color' },
+  { tr: 'pembe',      en: 'розовый',                    category: 'color' },
+  { tr: 'kahverengi', en: 'коричневый',                 category: 'color' },
+  { tr: 'gri',        en: 'серый',                      category: 'color' },
+  { tr: 'lacivert',   en: 'тёмно-синий',                category: 'color' },
+  { tr: 'altın',      en: 'золотой',                    category: 'color' },
+  { tr: 'gümüş',      en: 'серебряный',                 category: 'color' },
+  { tr: 'açık',       en: 'светлый',                    category: 'color' },
+  { tr: 'koyu',       en: 'тёмный',                     category: 'color' },
+  { tr: 'renk',       en: 'цвет',                       category: 'color' },
+  { tr: 'renkli',     en: 'цветной',                    category: 'color' },
+  { tr: 'şeffaf',     en: 'прозрачный',                 category: 'color' },
+  { tr: 'mat',        en: 'матовый',                    category: 'color' },
+  // Числа
+  { tr: 'sıfır',      en: 'ноль',                       category: 'number' },
+  { tr: 'bir',        en: 'один',                       category: 'number' },
+  { tr: 'iki',        en: 'два',                        category: 'number' },
+  { tr: 'üç',         en: 'три',                        category: 'number' },
+  { tr: 'dört',       en: 'четыре',                     category: 'number' },
+  { tr: 'beş',        en: 'пять',                       category: 'number' },
+  { tr: 'altı',       en: 'шесть',                      category: 'number' },
+  { tr: 'yedi',       en: 'семь',                       category: 'number' },
+  { tr: 'sekiz',      en: 'восемь',                     category: 'number' },
+  { tr: 'dokuz',      en: 'девять',                     category: 'number' },
+  { tr: 'on',         en: 'десять',                     category: 'number' },
+  { tr: 'yirmi',      en: 'двадцать',                   category: 'number' },
+  { tr: 'otuz',       en: 'тридцать',                   category: 'number' },
+  { tr: 'kırk',       en: 'сорок',                      category: 'number' },
+  { tr: 'elli',       en: 'пятьдесят',                  category: 'number' },
+  { tr: 'altmış',     en: 'шестьдесят',                 category: 'number' },
+  { tr: 'yetmiş',     en: 'семьдесят',                  category: 'number' },
+  { tr: 'seksen',     en: 'восемьдесят',                category: 'number' },
+  { tr: 'doksan',     en: 'девяносто',                  category: 'number' },
+  { tr: 'yüz',        en: 'сто',                        category: 'number' },
+  // Время
+  { tr: 'zaman',      en: 'время',                      category: 'time' },
+  { tr: 'saat',       en: 'час / часы',                 category: 'time' },
+  { tr: 'dakika',     en: 'минута',                     category: 'time' },
+  { tr: 'saniye',     en: 'секунда',                    category: 'time' },
+  { tr: 'bugün',      en: 'сегодня',                    category: 'time' },
+  { tr: 'yarın',      en: 'завтра',                     category: 'time' },
+  { tr: 'dün',        en: 'вчера',                      category: 'time' },
+  { tr: 'sabah',      en: 'утро',                       category: 'time' },
+  { tr: 'öğle',       en: 'полдень',                    category: 'time' },
+  { tr: 'akşam',      en: 'вечер',                      category: 'time' },
+  { tr: 'gece',       en: 'ночь',                       category: 'time' },
+  { tr: 'hafta',      en: 'неделя',                     category: 'time' },
+  { tr: 'ay',         en: 'месяц / луна',               category: 'time' },
+  { tr: 'yıl',        en: 'год',                        category: 'time' },
+  { tr: 'erken',      en: 'рано',                       category: 'time' },
+  { tr: 'geç',        en: 'поздно',                     category: 'time' },
+  { tr: 'şimdi',      en: 'сейчас',                     category: 'time' },
+  { tr: 'sonra',      en: 'потом / после',              category: 'time' },
+  { tr: 'önce',       en: 'раньше / перед',             category: 'time' },
+  { tr: 'her zaman',  en: 'всегда',                     category: 'time' },
+  // Транспорт
+  { tr: 'araba',      en: 'машина',                     category: 'transport' },
+  { tr: 'otobüs',     en: 'автобус',                    category: 'transport' },
+  { tr: 'minibüs',    en: 'маршрутка',                  category: 'transport' },
+  { tr: 'taksi',      en: 'такси',                      category: 'transport' },
+  { tr: 'metro',      en: 'метро',                      category: 'transport' },
+  { tr: 'tren',       en: 'поезд',                      category: 'transport' },
+  { tr: 'uçak',       en: 'самолёт',                    category: 'transport' },
+  { tr: 'gemi',       en: 'корабль',                    category: 'transport' },
+  { tr: 'tekne',      en: 'лодка',                      category: 'transport' },
+  { tr: 'bisiklet',   en: 'велосипед',                  category: 'transport' },
+  { tr: 'motosiklet', en: 'мотоцикл',                   category: 'transport' },
+  { tr: 'durak',      en: 'остановка',                  category: 'transport' },
+  { tr: 'istasyon',   en: 'станция',                    category: 'transport' },
+  { tr: 'bilet',      en: 'билет',                      category: 'transport' },
+  { tr: 'yol',        en: 'дорога',                     category: 'transport' },
+  { tr: 'trafik',     en: 'трафик',                     category: 'transport' },
+  { tr: 'köprü',      en: 'мост',                       category: 'transport' },
+  { tr: 'tünel',      en: 'туннель',                    category: 'transport' },
+  { tr: 'park',       en: 'парк / парковка',            category: 'transport' },
+  { tr: 'şerit',      en: 'полоса',                     category: 'transport' },
+  // Город и места
+  { tr: 'şehir',      en: 'город',                      category: 'city' },
+  { tr: 'sokak',      en: 'улица',                      category: 'city' },
+  { tr: 'cadde',      en: 'проспект',                   category: 'city' },
+  { tr: 'meydan',     en: 'площадь',                    category: 'city' },
+  { tr: 'mağaza',     en: 'магазин',                    category: 'city' },
+  { tr: 'market',     en: 'супермаркет',                category: 'city' },
+  { tr: 'restoran',   en: 'ресторан',                   category: 'city' },
+  { tr: 'kafe',       en: 'кафе',                       category: 'city' },
+  { tr: 'otel',       en: 'отель',                      category: 'city' },
+  { tr: 'hastane',    en: 'больница',                   category: 'city' },
+  { tr: 'eczane',     en: 'аптека',                     category: 'city' },
+  { tr: 'okul',       en: 'школа',                      category: 'city' },
+  { tr: 'üniversite', en: 'университет',                category: 'city' },
+  { tr: 'banka',      en: 'банк',                       category: 'city' },
+  { tr: 'postane',    en: 'почта',                      category: 'city' },
+  { tr: 'karakol',    en: 'полицейский участок',        category: 'city' },
+  { tr: 'havaalanı',  en: 'аэропорт',                   category: 'city' },
+  { tr: 'liman',      en: 'порт',                       category: 'city' },
+  { tr: 'plaj',       en: 'пляж',                       category: 'city' },
+  // Природа
+  { tr: 'güneş',      en: 'солнце',                     category: 'nature' },
+  { tr: 'yıldız',     en: 'звезда',                     category: 'nature' },
+  { tr: 'gökyüzü',    en: 'небо',                       category: 'nature' },
+  { tr: 'deniz',      en: 'море',                       category: 'nature' },
+  { tr: 'nehir',      en: 'река',                       category: 'nature' },
+  { tr: 'göl',        en: 'озеро',                      category: 'nature' },
+  { tr: 'dağ',        en: 'гора',                       category: 'nature' },
+  { tr: 'orman',      en: 'лес',                        category: 'nature' },
+  { tr: 'ağaç',       en: 'дерево',                     category: 'nature' },
+  { tr: 'çiçek',      en: 'цветок',                     category: 'nature' },
+  { tr: 'toprak',     en: 'земля',                      category: 'nature' },
+  { tr: 'kum',        en: 'песок',                      category: 'nature' },
+  { tr: 'taş',        en: 'камень',                     category: 'nature' },
+  { tr: 'rüzgar',     en: 'ветер',                      category: 'nature' },
+  { tr: 'yağmur',     en: 'дождь',                      category: 'nature' },
+  { tr: 'kar',        en: 'снег',                       category: 'nature' },
+  { tr: 'bulut',      en: 'облако',                     category: 'nature' },
+  { tr: 'fırtına',    en: 'шторм',                      category: 'nature' },
+  { tr: 'doğa',       en: 'природа',                    category: 'nature' },
+  // Местоимения
+  { tr: 'ben',        en: 'я',                          category: 'pronoun' },
+  { tr: 'sen',        en: 'ты',                         category: 'pronoun' },
+  { tr: 'o',          en: 'он / она / оно',             category: 'pronoun' },
+  { tr: 'biz',        en: 'мы',                         category: 'pronoun' },
+  { tr: 'siz',        en: 'вы',                         category: 'pronoun' },
+  { tr: 'onlar',      en: 'они',                        category: 'pronoun' },
+  { tr: 'bana',       en: 'мне',                        category: 'pronoun' },
+  { tr: 'sana',       en: 'тебе',                       category: 'pronoun' },
+  { tr: 'ona',        en: 'ему / ей',                   category: 'pronoun' },
+  { tr: 'bizi',       en: 'нас',                        category: 'pronoun' },
+  { tr: 'sizi',       en: 'вас',                        category: 'pronoun' },
+  { tr: 'onu',        en: 'его / её',                   category: 'pronoun' },
+  { tr: 'benim',      en: 'мой',                        category: 'pronoun' },
+  { tr: 'senin',      en: 'твой',                       category: 'pronoun' },
+  { tr: 'onun',       en: 'его / её',                   category: 'pronoun' },
+  { tr: 'bizim',      en: 'наш',                        category: 'pronoun' },
+  { tr: 'sizin',      en: 'ваш',                        category: 'pronoun' },
+  { tr: 'onların',    en: 'их',                         category: 'pronoun' },
+  { tr: 'kendim',     en: 'сам',                        category: 'pronoun' },
+  { tr: 'herkes',     en: 'все',                        category: 'pronoun' },
+  // Вопросы
+  { tr: 'kim',        en: 'кто',                        category: 'question' },
+  { tr: 'ne',         en: 'что',                        category: 'question' },
+  { tr: 'nerede',     en: 'где',                        category: 'question' },
+  { tr: 'nereye',     en: 'куда',                       category: 'question' },
+  { tr: 'nereden',    en: 'откуда',                     category: 'question' },
+  { tr: 'neden',      en: 'почему',                     category: 'question' },
+  { tr: 'niçin',      en: 'зачем',                      category: 'question' },
+  { tr: 'nasıl',      en: 'как',                        category: 'question' },
+  { tr: 'hangi',      en: 'какой',                      category: 'question' },
+  { tr: 'kaç',        en: 'сколько',                    category: 'question' },
+  { tr: 'kaç tane',   en: 'сколько штук',               category: 'question' },
+  { tr: 'ne zaman',   en: 'когда',                      category: 'question' },
+  { tr: 'ne kadar',   en: 'сколько стоит',              category: 'question' },
+  { tr: 'kimin',      en: 'чей',                        category: 'question' },
+  { tr: 'hangisi',    en: 'который',                    category: 'question' },
+  { tr: 'doğru mu',   en: 'правильно?',                 category: 'question' },
+  { tr: 'tamam mı',   en: 'хорошо?',                   category: 'question' },
+  { tr: 'anladın mı', en: 'понял?',                     category: 'question' },
+  { tr: 'hazır mı',   en: 'готов?',                     category: 'question' },
+  { tr: 'var mı',     en: 'есть?',                      category: 'question' },
+  // Глаголы
+  { tr: 'olmak',      en: 'быть',                       category: 'verb' },
+  { tr: 'gitmek',     en: 'идти',                       category: 'verb' },
+  { tr: 'gelmek',     en: 'приходить',                  category: 'verb' },
+  { tr: 'yapmak',     en: 'делать',                     category: 'verb' },
+  { tr: 'etmek',      en: 'делать (etmek)',             category: 'verb' },
+  { tr: 'almak',      en: 'брать',                      category: 'verb' },
+  { tr: 'vermek',     en: 'давать',                     category: 'verb' },
+  { tr: 'görmek',     en: 'видеть',                     category: 'verb' },
+  { tr: 'duymak',     en: 'слышать',                    category: 'verb' },
+  { tr: 'konuşmak',   en: 'говорить',                   category: 'verb' },
+  { tr: 'dinlemek',   en: 'слушать',                    category: 'verb' },
+  { tr: 'yemek',      en: 'есть (кушать)',              category: 'verb' },
+  { tr: 'içmek',      en: 'пить',                       category: 'verb' },
+  { tr: 'uyumak',     en: 'спать',                      category: 'verb' },
+  { tr: 'oturmak',    en: 'сидеть',                     category: 'verb' },
+  { tr: 'kalkmak',    en: 'вставать',                   category: 'verb' },
+  { tr: 'açmak',      en: 'открывать',                  category: 'verb' },
+  { tr: 'kapatmak',   en: 'закрывать',                  category: 'verb' },
+  { tr: 'beklemek',   en: 'ждать',                      category: 'verb' },
+  { tr: 'bulmak',     en: 'находить',                   category: 'verb' },
+  // Прилагательные
+  { tr: 'iyi',        en: 'хороший',                    category: 'adjective' },
+  { tr: 'kötü',       en: 'плохой',                     category: 'adjective' },
+  { tr: 'büyük',      en: 'большой',                    category: 'adjective' },
+  { tr: 'küçük',      en: 'маленький',                  category: 'adjective' },
+  { tr: 'uzun',       en: 'длинный',                    category: 'adjective' },
+  { tr: 'kısa',       en: 'короткий',                   category: 'adjective' },
+  { tr: 'yeni',       en: 'новый',                      category: 'adjective' },
+  { tr: 'eski',       en: 'старый',                     category: 'adjective' },
+  { tr: 'güzel',      en: 'красивый',                   category: 'adjective' },
+  { tr: 'çirkin',     en: 'некрасивый',                 category: 'adjective' },
+  { tr: 'hızlı',      en: 'быстрый',                    category: 'adjective' },
+  { tr: 'yavaş',      en: 'медленный',                  category: 'adjective' },
+  { tr: 'kolay',      en: 'лёгкий',                     category: 'adjective' },
+  { tr: 'zor',        en: 'сложный',                    category: 'adjective' },
+  { tr: 'sıcak',      en: 'горячий',                    category: 'adjective' },
+  { tr: 'soğuk',      en: 'холодный',                   category: 'adjective' },
+  { tr: 'dolu',       en: 'полный',                     category: 'adjective' },
+  { tr: 'boş',        en: 'пустой',                     category: 'adjective' },
+  { tr: 'doğru',      en: 'правильный',                 category: 'adjective' },
+  { tr: 'yanlış',     en: 'неправильный',               category: 'adjective' },
+  // Предлоги и союзы
+  { tr: 've',         en: 'и',                          category: 'preposition' },
+  { tr: 'veya',       en: 'или',                        category: 'preposition' },
+  { tr: 'ama',        en: 'но',                         category: 'preposition' },
+  { tr: 'çünkü',      en: 'потому что',                 category: 'preposition' },
+  { tr: 'ile',        en: 'с',                          category: 'preposition' },
+  { tr: 'için',       en: 'для',                        category: 'preposition' },
+  { tr: 'gibi',       en: 'как',                        category: 'preposition' },
+  { tr: 'kadar',      en: 'до / настолько',             category: 'preposition' },
+  { tr: 'içinde',     en: 'внутри',                     category: 'preposition' },
+  { tr: 'üstünde',    en: 'на',                         category: 'preposition' },
+  { tr: 'altında',    en: 'под',                        category: 'preposition' },
+  { tr: 'yanında',    en: 'рядом',                      category: 'preposition' },
+  { tr: 'arasında',   en: 'между',                      category: 'preposition' },
+  { tr: 'karşı',      en: 'напротив',                   category: 'preposition' },
+  { tr: 'hakkında',   en: 'о / про',                    category: 'preposition' },
+  { tr: 'göre',       en: 'согласно',                   category: 'preposition' },
+  { tr: 'beri',       en: 'с тех пор',                  category: 'preposition' },
+  { tr: 'dolayı',     en: 'из-за',                      category: 'preposition' },
+  // Фразы
+  { tr: 'merhaba',          en: 'здравствуйте',         category: 'phrase' },
+  { tr: 'selam',            en: 'привет',               category: 'phrase' },
+  { tr: 'günaydın',         en: 'доброе утро',          category: 'phrase' },
+  { tr: 'iyi akşamlar',     en: 'добрый вечер',         category: 'phrase' },
+  { tr: 'iyi geceler',      en: 'спокойной ночи',       category: 'phrase' },
+  { tr: 'nasılsın',         en: 'как дела',             category: 'phrase' },
+  { tr: 'teşekkür ederim',  en: 'спасибо',              category: 'phrase' },
+  { tr: 'rica ederim',      en: 'пожалуйста',           category: 'phrase' },
+  { tr: 'özür dilerim',     en: 'извините',             category: 'phrase' },
+  { tr: 'tamam',            en: 'хорошо',               category: 'phrase' },
+  { tr: 'anladım',          en: 'понял',                category: 'phrase' },
+  { tr: 'bilmiyorum',       en: 'не знаю',              category: 'phrase' },
+  { tr: 'yardım eder misiniz', en: 'можете помочь',     category: 'phrase' },
+  { tr: 'çok pahalı',       en: 'очень дорого',         category: 'phrase' },
+  { tr: 'ucuz',             en: 'дёшево',               category: 'phrase' },
+  { tr: 'bir dakika',       en: 'одну минуту',          category: 'phrase' },
+  { tr: 'bekleyin',         en: 'подождите',            category: 'phrase' },
+  { tr: 'hadi gidelim',     en: 'пошли',                category: 'phrase' },
+  { tr: 'görüşürüz',        en: 'увидимся',             category: 'phrase' },
+];
+
+try { (function seedYulya() {
+  if (_lsAvailable && localStorage.getItem(SEED_KEY_Y)) return;
+  const existing = loadWords();
+  const existingTr = new Set(existing.map(w => w.tr.toLowerCase()));
+  const now = Date.now();
+  const toAdd = SEED_WORDS_Y
+    .filter(w => !existingTr.has(w.tr.toLowerCase()))
+    .map((w, i) => ({
+      id: 'y_' + i,
+      tr: w.tr,
+      en: w.en,
+      notes: '',
+      category: w.category,
+      addedAt: now - (SEED_WORDS_Y.length - i) * 1000,
+      status: 'new',
+      correct: 0,
+      incorrect: 0
+    }));
+  if (toAdd.length > 0) saveWords([...existing, ...toAdd]);
+  if (_lsAvailable) localStorage.setItem(SEED_KEY_Y, '1');
+})(); } catch(e) { console.warn('seedY error', e); }
+
+// ── Populate category select (words tab) ───────────────
+function populateCatFilter() {
+  const sel = document.getElementById('cat-filter');
+  if (!sel) return;
+  const words = loadWords();
+  const usedCats = new Set(words.map(w => getCat(w)));
+  if (activeCatFilter && !usedCats.has(activeCatFilter)) activeCatFilter = '';
+  sel.innerHTML = '<option value="">Все категории</option>';
+  const catOrd = Object.keys(CATEGORIES);
+  catOrd.filter(k => usedCats.has(k)).forEach(key => {
+    const count = words.filter(w => getCat(w) === key).length;
+    const o = document.createElement('option');
+    o.value = key;
+    o.textContent = CATEGORIES[key] + ' · ' + count;
+    sel.appendChild(o);
+  });
+  sel.value = activeCatFilter;
+}
+
+// ── Boot ───────────────────────────────────────────────
+populateCatFilter();
+renderWordList();
+initQuiz();
+</script>
+</body>
+</html>
